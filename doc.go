@@ -5,5 +5,5 @@ Package wasm is a library allows you to use a websocket as net.Conn for arbitrar
 
 wasmws.WebSocket is the provided net.Conn implementation intended to be used from within Go WASM applications and wasmws.WebSockListener is the provided net.Listener intended to be used from server side native Go applications to accept client connections.
 
-For extended details and examples please see: https://github.com/tarndt/wasmws/blob/master/README.md
+For extended details and examples please see: https://github.com/flimzy/wasmws/blob/master/README.md
 */

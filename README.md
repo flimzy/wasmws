@@ -1,8 +1,10 @@
 # wasmws: Web-Assembly Websocket (for Go)
 
+This package is a fork of [`github.com/tarndt/wasmws`](https://github.com/tarndt/wasmws), to update dependency versions, and add some minor features I needed. Please consider using the original if it will suit your needs. If the upstream version is updated to suit my needs, I'll be deleting this fork.
+
 ## What is wasmws? Why would I want to use this?
 
-[wasmws](https://github.com/tarndt/wasmws) was written primarily to allow [Go](https://golang.org/) applications targeting [WASM](https://en.wikipedia.org/wiki/WebAssembly) to communicate with a [gRPC](https://grpc.io/) server. This is normally challenging for two reasons: 
+[wasmws](https://github.com/flimzy/wasmws) was written primarily to allow [Go](https://golang.org/) applications targeting [WASM](https://en.wikipedia.org/wiki/WebAssembly) to communicate with a [gRPC](https://grpc.io/) server. This is normally challenging for two reasons:
 
 1. In general, many internet ingress paths are not [HTTP/2](https://en.wikipedia.org/wiki/HTTP/2) end to end (gRPC uses HTTP/2). In particular, most CDN vendors do not support HTTP/2 back-haul to origin (ex. [Cloudflare](https://support.cloudflare.com/hc/en-us/articles/214534978-Are-the-HTTP-2-or-SPDY-protocols-supported-between-Cloudflare-and-the-origin-server-)).
 2. Browser WASM applications cannot use [grpc-go](https://github.com/grpc/grpc-go) due to the low level networking that go-grpc requires for native operation not being available. (ex. ``dial tcp: Protocol not available`` fun...)
@@ -20,7 +22,7 @@ It is fairly straight forward to use this package to set up a gRPC connection:
 ```go
 conn, err := grpc.DialContext(dialCtx, "passthrough:///"+websocketURL, grpc.WithContextDialer(wasmws.GRPCDialer), grpc.WithTransportCredentials(creds))
 ```
-See the [demo client](https://github.com/tarndt/wasmws/blob/master/demo/client/main.go) for an extended example.
+See the [demo client](https://github.com/flimzy/wasmws/blob/master/demo/client/main.go) for an extended example.
 
 #### Server-side
 wasmws includes websocket [net.Listener](https://golang.org/pkg/net/#Listener) that provides a [HTTP handler method](https://golang.org/pkg/net/http/#HandlerFunc) to accept HTTP websocket connections...
@@ -32,7 +34,7 @@ And a network listener to provide net.Conns to network oriented servers:
 ```go
 err := grpcServer.Serve(wsl)
 ```
-See the [demo server](https://github.com/tarndt/wasmws/blob/master/demo/server/main.go) for an extended example. If you need more server-side helpers checkout [github.com/coder/websocket](https://github.com/coder/websocket) which these helpers use themselves.
+See the [demo server](https://github.com/flimzy/wasmws/blob/master/demo/server/main.go) for an extended example. If you need more server-side helpers checkout [github.com/coder/websocket](https://github.com/coder/websocket) which these helpers use themselves.
 
 #### Security
 
@@ -60,7 +62,7 @@ The test results above are from tests run on a local development workstation:
 
 If you do not have Go installed, you will of course need to [install it](https://golang.org/doc/install).
 
-1. Checkout repo: ``git clone https://github.com/tarndt/wasmws.git``
+1. Checkout repo: ``git clone https://github.com/flimzy/wasmws.git``
 2. Change to the demo directory: ``cd ./wasmws/demo/server``
 3. Build the client, server and run the server (which serves the client): ``./build.bash && ./server``
 4. Open [http://localhost:8080/](http://localhost:8080/) in your web browser
@@ -75,11 +77,11 @@ If you do not have Go installed, you will of course need to [install it](https:/
 
 wasmws is actively being maintained, but that does not mean there are not things to do:
 
-* [Testing on browsers besides Firefox and Chrome](https://github.com/tarndt/wasmws/issues/5)
-* [Further optimization/profiling](https://github.com/tarndt/wasmws/issues/4)
+* [Testing on browsers besides Firefox and Chrome](https://github.com/flimzy/wasmws/issues/5)
+* [Further optimization/profiling](https://github.com/flimzy/wasmws/issues/4)
 		
 ## Contributing
 
-[Issues](https://github.com/tarndt/wasmws/issues), and especially issues with [pull requests](https://github.com/tarndt/wasmws/pulls) are welcome!
+[Issues](https://github.com/flimzy/wasmws/issues), and especially issues with [pull requests](https://github.com/flimzy/wasmws/pulls) are welcome!
 
 This code is licensed under [MPL 2.0](https://en.wikipedia.org/wiki/Mozilla_Public_License).
