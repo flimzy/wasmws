@@ -20,8 +20,8 @@ type WebSockListener struct {
 
 	acceptCh chan net.Conn
 
-	// WebsocketAcceptOptions are options to be passed to [websocket.Accept].
-	WebsocketAcceptOptions *websocket.AcceptOptions
+	// AcceptOptions are options to be passed to [websocket.Accept].
+	AcceptOptions *websocket.AcceptOptions
 }
 
 var (
@@ -64,7 +64,7 @@ func (wsl *WebSockListener) ServeHTTP(wtr http.ResponseWriter, req *http.Request
 	default:
 	}
 
-	ws, err := websocket.Accept(wtr, req, wsl.WebsocketAcceptOptions)
+	ws, err := websocket.Accept(wtr, req, wsl.AcceptOptions)
 	if err != nil {
 		log.Printf("WebSockListener: ERROR: Could not accept websocket from %q; Details: %s", req.RemoteAddr, err)
 	}
