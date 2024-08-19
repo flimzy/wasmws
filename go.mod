@@ -1,4 +1,4 @@
-module github.com/tarndt/wasmws
+module github.com/flimzy/wasmws
 
 go 1.13
 
