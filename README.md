@@ -1,5 +1,7 @@
 # wasmws: Web-Assembly Websocket (for Go)
 
+This package is a fork of [`github.com/tarndt/wasmws`](https://github.com/tarndt/wasmws), to update dependency versions, and add some minor features I needed. Please consider using the original if it will suit your needs. If the upstream version is updated to suit my needs, I'll be deleting this fork.
+
 ## What is wasmws? Why would I want to use this?
 
 [wasmws](https://github.com/flimzy/wasmws) was written primarily to allow [Go](https://golang.org/) applications targeting [WASM](https://en.wikipedia.org/wiki/WebAssembly) to communicate with a [gRPC](https://grpc.io/) server. This is normally challenging for two reasons:
