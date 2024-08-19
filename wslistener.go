@@ -12,13 +12,16 @@ import (
 	"github.com/coder/websocket"
 )
 
-//WebSockListener implements net.Listener and provides connections that are
-//incoming websocket connections
+// WebSockListener implements net.Listener and provides connections that are
+// incoming websocket connections
 type WebSockListener struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
 
 	acceptCh chan net.Conn
+
+	// WebsocketAcceptOptions are options to be passed to [websocket.Accept].
+	WebsocketAcceptOptions *websocket.AcceptOptions
 }
 
 var (
@@ -61,7 +64,7 @@ func (wsl *WebSockListener) ServeHTTP(wtr http.ResponseWriter, req *http.Request
 	default:
 	}
 
-	ws, err := websocket.Accept(wtr, req, nil)
+	ws, err := websocket.Accept(wtr, req, wsl.WebsocketAcceptOptions)
 	if err != nil {
 		log.Printf("WebSockListener: ERROR: Could not accept websocket from %q; Details: %s", req.RemoteAddr, err)
 	}
