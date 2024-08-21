@@ -12,7 +12,7 @@ import (
 
 const echoServiceWebSockURL = "ws://echo.websocket.events"
 
-//These tests are intended to run in a headless chrome instance (see test.bash)
+// These tests are intended to run in a headless chrome instance (see test.bash)
 // and access an external public websocket testing server.
 
 func TestWebsocketEchoSmall(t *testing.T) {
@@ -55,7 +55,7 @@ func TestWebsocketEchoLarge(t *testing.T) {
 }
 
 func echo(t testing.TB, in io.Reader, conn net.Conn, verify bool, optCopyBuf []byte, optReadBuf *bytes.Buffer) (copyBuf []byte, readBuf *bytes.Buffer) {
-	//Buffer setup
+	// Buffer setup
 	if optCopyBuf == nil {
 		optCopyBuf = make([]byte, 64*1024)
 	}
@@ -65,25 +65,25 @@ func echo(t testing.TB, in io.Reader, conn net.Conn, verify bool, optCopyBuf []b
 		optReadBuf.Reset()
 	}
 
-	//Verify?
+	// Verify?
 	var verifyBuf bytes.Buffer
 	if verify {
 		in = io.TeeReader(in, &verifyBuf)
 	}
 
-	//Write
+	// Write
 	n, err := io.CopyBuffer(conn, in, optCopyBuf)
 	if err != nil {
 		t.Fatalf("Write/Copy to echo server failed; Details: %s", err)
 	}
 
-	//Read
+	// Read
 	limRdr := io.LimitedReader{R: conn, N: n}
 	if optReadBuf.ReadFrom(&limRdr); err != nil {
 		t.Fatalf("Read from echo server failed; Details: %s", err)
 	}
 
-	//Verify
+	// Verify
 	if verify {
 		if expected, actual := verifyBuf.String(), optReadBuf.String(); expected != actual {
 			t.Fatalf("Echo server returned %q rather than %q!", actual, expected)

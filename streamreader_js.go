@@ -7,7 +7,7 @@ import (
 	"syscall/js"
 )
 
-//streamReader is an io.ReadCloser implementation for Javascript's ReadableStream
+// streamReader is an io.ReadCloser implementation for Javascript's ReadableStream
 // See: https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
 type streamReader struct {
 	remaining []byte
@@ -21,7 +21,7 @@ var streamReaderPool = sync.Pool{
 	},
 }
 
-//newStreamReaderPromise returns a streamReader from a JavaScript promise for
+// newStreamReaderPromise returns a streamReader from a JavaScript promise for
 // a stream reader: See https://developer.mozilla.org/en-US/docs/Web/API/Blob/stream
 func newStreamReaderPromise(streamPromise js.Value) *streamReader {
 	sr := streamReaderPool.Get().(*streamReader)
@@ -29,14 +29,14 @@ func newStreamReaderPromise(streamPromise js.Value) *streamReader {
 	return sr
 }
 
-//Close closes the streamReader and returns it to a pool. DO NOT USE FURTHER!
+// Close closes the streamReader and returns it to a pool. DO NOT USE FURTHER!
 func (sr *streamReader) Close() error {
 	sr.Reset()
 	streamReaderPool.Put(sr)
 	return nil
 }
 
-//Reset makes this streamReader ready for reuse
+// Reset makes this streamReader ready for reuse
 func (sr *streamReader) Reset() {
 	const bufMax = socketStreamThresholdBytes
 	sr.jsPromise, sr.err = js.Value{}, nil
@@ -47,7 +47,7 @@ func (sr *streamReader) Reset() {
 	}
 }
 
-//Read implements the standard io.Reader interface
+// Read implements the standard io.Reader interface
 func (sr *streamReader) Read(p []byte) (n int, err error) {
 	if sr.err != nil {
 		return 0, sr.err
@@ -76,12 +76,12 @@ func (sr *streamReader) Read(p []byte) (n int, err error) {
 		defer successCallback.Release()
 
 		failureCallback := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-			errCh <- errors.New(args[0].Get("message").String()) //Send TypeError
+			errCh <- errors.New(args[0].Get("message").String()) // Send TypeError
 			return nil
 		})
 		defer failureCallback.Release()
 
-		//Wait for callback
+		// Wait for callback
 		sr.jsPromise.Call("read").Call("then", successCallback, failureCallback)
 		select {
 		case sr.remaining = <-readCh:

@@ -9,7 +9,7 @@ var (
 	uint8Array  = js.Global().Get("Uint8Array")
 )
 
-//timeoutErr is a net.Addr implementation for the websocket to use when fufilling
+// timeoutErr is a net.Addr implementation for the websocket to use when fufilling
 // the net.Conn interface
 type timeoutError struct{}
 
@@ -19,7 +19,7 @@ func (timeoutError) Timeout() bool { return true }
 
 func (timeoutError) Temporary() bool { return true }
 
-//wsAddr is a net.Addr implementation for the websocket to use when fufilling
+// wsAddr is a net.Addr implementation for the websocket to use when fufilling
 // the net.Conn interface
 type wsAddr string
 

@@ -30,30 +30,30 @@ func (*helloServer) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.Hell
 }
 
 func main() {
-	//App context setup
+	// App context setup
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
-	//Setup HTTP / Websocket server
+	// Setup HTTP / Websocket server
 	router := http.NewServeMux()
 	wsl := wasmws.NewWebSocketListener(appCtx)
 	router.HandleFunc("/grpc-proxy", wsl.ServeHTTP)
 	router.Handle("/", http.FileServer(http.Dir("./static")))
 	httpServer := &http.Server{Addr: ":8080", Handler: router}
-	//Run HTTP server
+	// Run HTTP server
 	go func() {
 		defer appCancel()
 		log.Printf("ERROR: HTTP Listen and Server failed; Details: %s", httpServer.ListenAndServe())
 	}()
 
-	//gRPC setup
+	// gRPC setup
 	creds, err := credentials.NewServerTLSFromFile("cert.pem", "key.pem")
 	if err != nil {
 		log.Fatalf("Failed to contruct gRPC TSL credentials from {cert,key}.pem: %s", err)
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterGreeterServer(grpcServer, new(helloServer))
-	//Run gRPC server
+	// Run gRPC server
 	go func() {
 		defer appCancel()
 
@@ -62,7 +62,7 @@ func main() {
 		}
 	}()
 
-	//Handle signals
+	// Handle signals
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -70,7 +70,7 @@ func main() {
 		appCancel()
 	}()
 
-	//Shutdown
+	// Shutdown
 	<-appCtx.Done()
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer shutdownCancel()

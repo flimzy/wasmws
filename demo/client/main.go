@@ -18,16 +18,16 @@ import (
 )
 
 func main() {
-	//App context setup
+	// App context setup
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
-	//Dial setup
+	// Dial setup
 	const dialTO = time.Second
 	dialCtx, dialCancel := context.WithTimeout(appCtx, dialTO)
 	defer dialCancel()
 
-	//Connect to remote gRPC server
+	// Connect to remote gRPC server
 	const websocketURL = "ws://localhost:8080/grpc-proxy"
 	creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
 	conn, err := grpc.DialContext(dialCtx, "passthrough:///"+websocketURL, grpc.WithContextDialer(wasmws.GRPCDialer), grpc.WithDisableRetry(), grpc.WithTransportCredentials(creds))
@@ -36,15 +36,14 @@ func main() {
 	}
 	defer conn.Close()
 
-	//Test setup
+	// Test setup
 	client := pb.NewGreeterClient(conn)
 
-	//Test transactions
+	// Test transactions
 	start := time.Now()
 	const ops = 8192
 	for i := 1; i <= ops; i++ {
 		_, err := testTrans(appCtx, client)
-
 		if err != nil {
 			log.Fatalf("Test transaction %d failed; Details: %s", i, err)
 		}

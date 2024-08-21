@@ -1,3 +1,4 @@
+//go:build !js && !wasm
 // +build !js,!wasm
 
 package wasmws
@@ -29,8 +30,8 @@ var (
 	_ http.Handler = (*WebSockListener)(nil)
 )
 
-//NewWebSocketListener constructs a new WebSockListener, the provided context
-//is for the lifetime of the listener.
+// NewWebSocketListener constructs a new WebSockListener, the provided context
+// is for the lifetime of the listener.
 func NewWebSocketListener(ctx context.Context) *WebSockListener {
 	ctx, cancel := context.WithCancel(ctx)
 	wsl := &WebSockListener{
@@ -38,7 +39,7 @@ func NewWebSocketListener(ctx context.Context) *WebSockListener {
 		ctxCancel: cancel,
 		acceptCh:  make(chan net.Conn, 8),
 	}
-	go func() { //Close queued connections
+	go func() { // Close queued connections
 		<-ctx.Done()
 		for {
 			select {
@@ -53,7 +54,7 @@ func NewWebSocketListener(ctx context.Context) *WebSockListener {
 	return wsl
 }
 
-//ServeHTTP is a method that is mean to be used as http.HandlerFunc to accept inbound HTTP requests
+// ServeHTTP is a method that is mean to be used as http.HandlerFunc to accept inbound HTTP requests
 // that are websocket connections
 func (wsl *WebSockListener) ServeHTTP(wtr http.ResponseWriter, req *http.Request) {
 	select {
@@ -79,7 +80,7 @@ func (wsl *WebSockListener) ServeHTTP(wtr http.ResponseWriter, req *http.Request
 	}
 }
 
-//Accept fulfills the net.Listener interface and returns net.Conn that are incoming
+// Accept fulfills the net.Listener interface and returns net.Conn that are incoming
 // websockets
 func (wsl *WebSockListener) Accept() (net.Conn, error) {
 	select {
@@ -90,13 +91,13 @@ func (wsl *WebSockListener) Accept() (net.Conn, error) {
 	}
 }
 
-//Close closes the listener
+// Close closes the listener
 func (wsl *WebSockListener) Close() error {
 	wsl.ctxCancel()
 	return nil
 }
 
-//RemoteAddr returns a dummy websocket address to satisfy net.Listener
+// RemoteAddr returns a dummy websocket address to satisfy net.Listener
 func (wsl *WebSockListener) Addr() net.Addr {
 	return wsAddr{}
 }
