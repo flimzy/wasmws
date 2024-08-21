@@ -12,22 +12,22 @@ import (
 )
 
 const (
-	socketStreamThresholdBytes = 1024  //If enabled, the Blob interface will be used when consecutive messages exceed this threshold
-	debugVerbose               = false //Set to true if you are debugging issues, this gates many prints that would kill performance
+	socketStreamThresholdBytes = 1024  // If enabled, the Blob interface will be used when consecutive messages exceed this threshold
+	debugVerbose               = false // Set to true if you are debugging issues, this gates many prints that would kill performance
 )
 
 var (
-	//EnableBlobStreaming allows the browser provided Websocket's streaming
+	// EnableBlobStreaming allows the browser provided Websocket's streaming
 	// interface to be used, if supported.
 	EnableBlobStreaming bool = true
 
-	//ErrWebsocketClosed is returned when operations are performed on a closed Websocket
+	// ErrWebsocketClosed is returned when operations are performed on a closed Websocket
 	ErrWebsocketClosed = errors.New("WebSocket: Web socket is closed")
 
-	blobSupported bool //set to true by init if browser supports the Blob interface
+	blobSupported bool // set to true by init if browser supports the Blob interface
 )
 
-//init checks to see if the browser hosting this application support the Websocket Blob interface
+// init checks to see if the browser hosting this application support the Websocket Blob interface
 func init() {
 	newBlob := js.Global().Get("Blob")
 	if newBlob.Equal(jsUndefined) {
@@ -42,7 +42,7 @@ func init() {
 	}
 }
 
-//WebSocket is a Go struct that wraps the web browser's JavaScript websocket object and provides a net.Conn interface
+// WebSocket is a Go struct that wraps the web browser's JavaScript websocket object and provides a net.Conn interface
 type WebSocket struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
@@ -69,7 +69,7 @@ type WebSocket struct {
 	cleanup []func()
 }
 
-//New returns a new WebSocket using the provided dial context and websocket URL.
+// New returns a new WebSocket using the provided dial context and websocket URL.
 // The URL should be in the form of "ws://host/path..." for unsecured websockets
 // and "wss://host/path..." for secured websockets. If tunnel a TLS based protocol
 // over a "wss://..." websocket you will get TLS twice, once on the websocket using
@@ -105,7 +105,7 @@ func New(dialCtx context.Context, URL string) (*WebSocket, error) {
 	ws.addHandler(ws.handleError, "error")
 	ws.addHandler(ws.handleMessage, "message")
 
-	go func() { //handle shutdown
+	go func() { // handle shutdown
 		<-ws.ctx.Done()
 		if debugVerbose {
 			println("Websocket: Shutdown")
@@ -130,7 +130,7 @@ func New(dialCtx context.Context, URL string) (*WebSocket, error) {
 		}
 	}()
 
-	//Wait for connection or failure
+	// Wait for connection or failure
 	select {
 	case <-ws.ctx.Done():
 		return nil, ErrWebsocketClosed
@@ -149,7 +149,7 @@ func New(dialCtx context.Context, URL string) (*WebSocket, error) {
 		}
 	}
 
-	//Find out what kind of socket we are
+	// Find out what kind of socket we are
 	if ws.wsType = newSocketType(ws.ws); ws.wsType == socketTypeUnknown {
 		if debugVerbose {
 			println("Websocket: Invalid socket type")
@@ -160,7 +160,7 @@ func New(dialCtx context.Context, URL string) (*WebSocket, error) {
 	return ws, nil
 }
 
-//Close shuts the websocket down
+// Close shuts the websocket down
 func (ws *WebSocket) Close() error {
 	if debugVerbose {
 		println("Websocket: Internal close")
@@ -169,31 +169,31 @@ func (ws *WebSocket) Close() error {
 	return nil
 }
 
-//LocalAddr returns a dummy websocket address to satisfy net.Conn, see: wsAddr
+// LocalAddr returns a dummy websocket address to satisfy net.Conn, see: wsAddr
 func (ws *WebSocket) LocalAddr() net.Addr {
 	return wsAddr(ws.URL)
 }
 
-//RemoteAddr returns a dummy websocket address to satisfy net.Conn, see: wsAddr
+// RemoteAddr returns a dummy websocket address to satisfy net.Conn, see: wsAddr
 func (ws *WebSocket) RemoteAddr() net.Addr {
 	return wsAddr(ws.URL)
 }
 
-//Write implements the standard io.Writer interface. Due to the JavaScript writes
+// Write implements the standard io.Writer interface. Due to the JavaScript writes
 // being internally buffered it will never block and a write timeout from a
 // previous write may not surface until a subsequent write.
 func (ws *WebSocket) Write(buf []byte) (n int, err error) {
-	//Check for noop
+	// Check for noop
 	writeCount := len(buf)
 	if writeCount < 1 {
 		return 0, nil
 	}
 
-	//Lock
+	// Lock
 	ws.writeLock.Lock()
 	defer ws.writeLock.Unlock()
 
-	//Check for close or new deadline
+	// Check for close or new deadline
 	select {
 	case <-ws.ctx.Done():
 		return 0, ErrWebsocketClosed
@@ -204,7 +204,7 @@ func (ws *WebSocket) Write(buf []byte) (n int, err error) {
 	default:
 	}
 
-	//Write
+	// Write
 	select {
 	case <-ws.ctx.Done():
 		return 0, ErrWebsocketClosed
@@ -233,7 +233,7 @@ func (ws *WebSocket) Write(buf []byte) (n int, err error) {
 		}
 	}
 
-	//Check for status updates before returning
+	// Check for status updates before returning
 	select {
 	case err = <-ws.errCh:
 		if debugVerbose {
@@ -252,18 +252,18 @@ func (ws *WebSocket) Write(buf []byte) (n int, err error) {
 	return writeCount, nil
 }
 
-//Read implements the standard io.Reader interface (typical semantics)
+// Read implements the standard io.Reader interface (typical semantics)
 func (ws *WebSocket) Read(buf []byte) (int, error) {
-	//Check for noop
+	// Check for noop
 	if len(buf) < 1 {
 		return 0, nil
 	}
 
-	//Lock
+	// Lock
 	ws.readLock.Lock()
 	defer ws.readLock.Unlock()
 
-	//Check for close or new deadline
+	// Check for close or new deadline
 	select {
 	case <-ws.ctx.Done():
 		return 0, ErrWebsocketClosed
@@ -278,7 +278,7 @@ func (ws *WebSocket) Read(buf []byte) (int, error) {
 	}
 
 	for {
-		//Get next chunk
+		// Get next chunk
 		if ws.remaining == nil {
 			if debugVerbose {
 				println("Websocket: Read wait on queue-")
@@ -303,7 +303,7 @@ func (ws *WebSocket) Read(buf []byte) (int, error) {
 			}
 		}
 
-		//Read from chunk
+		// Read from chunk
 		if debugVerbose {
 			println("Websocket: Reading")
 		}
@@ -334,7 +334,7 @@ func (ws *WebSocket) SetDeadline(future time.Time) (err error) {
 	return nil
 }
 
-//SetWriteDeadline implements the Conn SetWriteDeadline method
+// SetWriteDeadline implements the Conn SetWriteDeadline method
 func (ws *WebSocket) SetWriteDeadline(future time.Time) error {
 	if debugVerbose {
 		println("Websocket: Set write deadline for", future.String())
@@ -343,7 +343,7 @@ func (ws *WebSocket) SetWriteDeadline(future time.Time) error {
 	return nil
 }
 
-//SetReadDeadline implements the Conn SetReadDeadline method
+// SetReadDeadline implements the Conn SetReadDeadline method
 func (ws *WebSocket) SetReadDeadline(future time.Time) error {
 	if debugVerbose {
 		println("Websocket: Set read deadline for", future.String())
@@ -352,7 +352,7 @@ func (ws *WebSocket) SetReadDeadline(future time.Time) error {
 	return nil
 }
 
-//setDeadline is used internally; Only call from New or Read!
+// setDeadline is used internally; Only call from New or Read!
 func (ws *WebSocket) setDeadline(timer *time.Timer, future time.Time) error {
 	if !timer.Stop() {
 		select {
@@ -366,7 +366,7 @@ func (ws *WebSocket) setDeadline(timer *time.Timer, future time.Time) error {
 	return nil
 }
 
-//addHandler is used internall by the WebSocket constructor
+// addHandler is used internall by the WebSocket constructor
 func (ws *WebSocket) addHandler(handler func(this js.Value, args []js.Value), event string) {
 	jsHandler := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		handler(this, args)
@@ -380,7 +380,7 @@ func (ws *WebSocket) addHandler(handler func(this js.Value, args []js.Value), ev
 	ws.cleanup = append(ws.cleanup, cleanup)
 }
 
-//handleOpen is a callback for JavaScript to notify Go when the websocket is open:
+// handleOpen is a callback for JavaScript to notify Go when the websocket is open:
 // See: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/onopen
 func (ws *WebSocket) handleOpen(_ js.Value, _ []js.Value) {
 	if debugVerbose {
@@ -389,7 +389,7 @@ func (ws *WebSocket) handleOpen(_ js.Value, _ []js.Value) {
 	close(ws.openCh)
 }
 
-//handleClose is a callback for JavaScript to notify Go when the websocket is closed:
+// handleClose is a callback for JavaScript to notify Go when the websocket is closed:
 // See: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/onclose
 func (ws *WebSocket) handleClose(_ js.Value, _ []js.Value) {
 	if debugVerbose {
@@ -398,7 +398,7 @@ func (ws *WebSocket) handleClose(_ js.Value, _ []js.Value) {
 	ws.ctxCancel()
 }
 
-//handleError is a callback for JavaScript to notify Go when the websocket is in an error state:
+// handleError is a callback for JavaScript to notify Go when the websocket is in an error state:
 // See: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/onerror
 func (ws *WebSocket) handleError(_ js.Value, args []js.Value) {
 	if debugVerbose {
@@ -415,7 +415,7 @@ func (ws *WebSocket) handleError(_ js.Value, args []js.Value) {
 	}
 }
 
-//handleMessage is a callback for JavaScript to notify Go when the websocket has a new message:
+// handleMessage is a callback for JavaScript to notify Go when the websocket has a new message:
 // See: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/onmessage
 func (ws *WebSocket) handleMessage(_ js.Value, args []js.Value) {
 	if debugVerbose {
@@ -433,7 +433,7 @@ func (ws *WebSocket) handleMessage(_ js.Value, args []js.Value) {
 	switch ws.wsType {
 	case socketTypeArrayBuffer:
 		rdr, size = newReaderArrayBuffer(args[0].Get("data"))
-		//Should we switch to blobs for next time?
+		// Should we switch to blobs for next time?
 		if ws.enableBlob && size > socketStreamThresholdBytes {
 			ws.wsType = socketTypeBlob
 			ws.wsType.Set(ws.ws)
@@ -443,7 +443,7 @@ func (ws *WebSocket) handleMessage(_ js.Value, args []js.Value) {
 		jsBlob := args[0].Get("data")
 		if size = jsBlob.Get("size").Int(); size <= socketStreamThresholdBytes {
 			rdr = newReaderArrayPromise(jsBlob.Call("arrayBuffer"))
-			//switch to ArrayBuffers for next read
+			// switch to ArrayBuffers for next read
 			ws.wsType = socketTypeArrayBuffer
 			ws.wsType.Set(ws.ws)
 		} else {
@@ -455,7 +455,7 @@ func (ws *WebSocket) handleMessage(_ js.Value, args []js.Value) {
 	}
 
 	select {
-	case ws.readCh <- rdr: //Try non-blocking queue first...
+	case ws.readCh <- rdr: // Try non-blocking queue first...
 		if debugVerbose {
 			println("Websocket: JS read callback sync enqueue")
 		}
@@ -463,7 +463,7 @@ func (ws *WebSocket) handleMessage(_ js.Value, args []js.Value) {
 	case <-ws.ctx.Done():
 
 	default:
-		go func() { //Don't block in a callback!
+		go func() { // Don't block in a callback!
 			select {
 			case ws.readCh <- rdr:
 				if debugVerbose {

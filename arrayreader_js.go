@@ -7,7 +7,7 @@ import (
 	"syscall/js"
 )
 
-//arrayReader is an io.ReadCloser implementation for Javascript ArrayBuffers
+// arrayReader is an io.ReadCloser implementation for Javascript ArrayBuffers
 // See: https://developer.mozilla.org/en-US/docs/Web/API/Body/arrayBuffer
 type arrayReader struct {
 	jsPromise js.Value
@@ -23,7 +23,7 @@ var arrayReaderPool = sync.Pool{
 	},
 }
 
-//newReaderArrayPromise returns a arrayReader from a JavaScript promise for
+// newReaderArrayPromise returns a arrayReader from a JavaScript promise for
 // an array buffer: See https://developer.mozilla.org/en-US/docs/Web/API/Blob/arrayBuffer
 func newReaderArrayPromise(arrayPromise js.Value) *arrayReader {
 	ar := arrayReaderPool.Get().(*arrayReader)
@@ -31,7 +31,7 @@ func newReaderArrayPromise(arrayPromise js.Value) *arrayReader {
 	return ar
 }
 
-//newReaderArrayPromise returns a arrayReader from a JavaScript array buffer:
+// newReaderArrayPromise returns a arrayReader from a JavaScript array buffer:
 // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
 func newReaderArrayBuffer(arrayBuffer js.Value) (*arrayReader, int) {
 	ar := arrayReaderPool.Get().(*arrayReader)
@@ -39,14 +39,14 @@ func newReaderArrayBuffer(arrayBuffer js.Value) (*arrayReader, int) {
 	return ar, len(ar.remaining)
 }
 
-//Close closes the arrayReader and returns it to a pool. DO NOT USE FURTHER!
+// Close closes the arrayReader and returns it to a pool. DO NOT USE FURTHER!
 func (ar *arrayReader) Close() error {
 	ar.Reset()
 	arrayReaderPool.Put(ar)
 	return nil
 }
 
-//Reset makes this arrayReader ready for reuse
+// Reset makes this arrayReader ready for reuse
 func (ar *arrayReader) Reset() {
 	const bufMax = socketStreamThresholdBytes
 	ar.jsPromise, ar.read, ar.err = js.Value{}, false, nil
@@ -57,7 +57,7 @@ func (ar *arrayReader) Reset() {
 	}
 }
 
-//Read implements the standard io.Reader interface
+// Read implements the standard io.Reader interface
 func (ar *arrayReader) Read(buf []byte) (n int, err error) {
 	if ar.err != nil {
 		return 0, ar.err
@@ -74,12 +74,12 @@ func (ar *arrayReader) Read(buf []byte) (n int, err error) {
 		defer successCallback.Release()
 
 		failureCallback := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-			errCh <- errors.New(args[0].Get("message").String()) //Send TypeError
+			errCh <- errors.New(args[0].Get("message").String()) // Send TypeError
 			return nil
 		})
 		defer failureCallback.Release()
 
-		//Wait for callback
+		// Wait for callback
 		ar.jsPromise.Call("then", successCallback, failureCallback)
 		select {
 		case ar.remaining = <-readCh:
@@ -96,7 +96,7 @@ func (ar *arrayReader) Read(buf []byte) (n int, err error) {
 	return n, nil
 }
 
-//fromArray is a helper that that copies a JavaScript ArrayBuffer into go-space
+// fromArray is a helper that that copies a JavaScript ArrayBuffer into go-space
 // and uses an existing go buffer if possible.
 func (ar *arrayReader) fromArray(arrayBuffer js.Value) []byte {
 	jsBuf := uint8Array.New(arrayBuffer)
