@@ -60,3 +60,11 @@ func (d *Dialer) DialContext(ctx context.Context, network, address string) (net.
 	}
 	return New(ctx, address, d.opts...)
 }
+
+// GRPCDialer can be used with [google.golang.org/grpc.WithContextDialer] to
+// call [DialContext]. The address provided to the calling grpc.Dial should be
+// in the form "passthrough:///"+websocketURL where websocketURL matches the
+// description in DialContext.
+func (d *Dialer) GRPCDialer(ctx context.Context, address string) (net.Conn, error) {
+	return d.DialContext(ctx, "websocket", address)
+}
