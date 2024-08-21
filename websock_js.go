@@ -75,7 +75,7 @@ type WebSocket struct {
 // and "wss://host/path..." for secured websockets. If tunnel a TLS based protocol
 // over a "wss://..." websocket you will get TLS twice, once on the websocket using
 // the browsers TLS stack and another using the Go (or other compiled) TLS stack.
-func New(dialCtx context.Context, URL string) (*WebSocket, error) {
+func New(dialCtx context.Context, URL string, _ ...DialOption) (*WebSocket, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	ws := &WebSocket{
 		ctx:       ctx,
