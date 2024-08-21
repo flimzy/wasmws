@@ -1,12 +1,14 @@
 package wasmws
 
-import (
-	"syscall/js"
+import "errors"
+
+const (
+	debugVerbose = false // Set to true if you are debugging issues, this gates many prints that would kill performance
 )
 
 var (
-	jsUndefined = js.Undefined()
-	uint8Array  = js.Global().Get("Uint8Array")
+	// ErrWebsocketClosed is returned when operations are performed on a closed Websocket
+	ErrWebsocketClosed = errors.New("WebSocket: Web socket is closed")
 )
 
 // timeoutErr is a net.Addr implementation for the websocket to use when fufilling
