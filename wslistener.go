@@ -99,11 +99,5 @@ func (wsl *WebSockListener) Close() error {
 
 // RemoteAddr returns a dummy websocket address to satisfy net.Listener
 func (wsl *WebSockListener) Addr() net.Addr {
-	return wsAddr{}
+	return wsAddr("websocket")
 }
-
-type wsAddr struct{}
-
-func (wsAddr) Network() string { return "websocket" }
-
-func (wsAddr) String() string { return "websocket" }

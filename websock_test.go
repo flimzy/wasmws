@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 const echoServiceWebSockURL = "ws://echo.websocket.events"
@@ -32,7 +34,7 @@ func TestWebsocketEchoSmall(t *testing.T) {
 	for i := byte('!'); i < '~'; i++ {
 		msgBuf.WriteByte(i)
 		t.Logf("Echo:  %q", msgBuf.Bytes())
-		copyBuf, readBuf = echo(t, bytes.NewReader(msgBuf.Bytes()), ws, true, copyBuf, readBuf)
+		copyBuf, readBuf = echo(t, bytes.NewReader(msgBuf.Bytes()), ws, copyBuf, readBuf)
 	}
 }
 
@@ -50,11 +52,12 @@ func TestWebsocketEchoLarge(t *testing.T) {
 	var copyBuf []byte
 	var readBuf *bytes.Buffer
 	for i := 0; i < 10; i++ {
-		copyBuf, readBuf = echo(t, strings.NewReader(testMsg), ws, true, copyBuf, readBuf)
+		copyBuf, readBuf = echo(t, strings.NewReader(testMsg), ws, copyBuf, readBuf)
 	}
 }
 
-func echo(t testing.TB, in io.Reader, conn net.Conn, verify bool, optCopyBuf []byte, optReadBuf *bytes.Buffer) (copyBuf []byte, readBuf *bytes.Buffer) {
+func echo(t testing.TB, in io.Reader, conn net.Conn, optCopyBuf []byte, optReadBuf *bytes.Buffer) (copyBuf []byte, readBuf *bytes.Buffer) {
+	t.Helper()
 	// Buffer setup
 	if optCopyBuf == nil {
 		optCopyBuf = make([]byte, 64*1024)
@@ -67,9 +70,7 @@ func echo(t testing.TB, in io.Reader, conn net.Conn, verify bool, optCopyBuf []b
 
 	// Verify?
 	var verifyBuf bytes.Buffer
-	if verify {
-		in = io.TeeReader(in, &verifyBuf)
-	}
+	in = io.TeeReader(in, &verifyBuf)
 
 	// Write
 	n, err := io.CopyBuffer(conn, in, optCopyBuf)
@@ -83,11 +84,8 @@ func echo(t testing.TB, in io.Reader, conn net.Conn, verify bool, optCopyBuf []b
 		t.Fatalf("Read from echo server failed; Details: %s", err)
 	}
 
-	// Verify
-	if verify {
-		if expected, actual := verifyBuf.String(), optReadBuf.String(); expected != actual {
-			t.Fatalf("Echo server returned %q rather than %q!", actual, expected)
-		}
+	if d := cmp.Diff(verifyBuf.String(), optReadBuf.String()); d != "" {
+		t.Fatalf("Echo server returned unexpected reply:\n%s", d)
 	}
 
 	return optCopyBuf, optReadBuf

@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	socketStreamThresholdBytes = 1024  // If enabled, the Blob interface will be used when consecutive messages exceed this threshold
-	debugVerbose               = false // Set to true if you are debugging issues, this gates many prints that would kill performance
+	socketStreamThresholdBytes = 1024 // If enabled, the Blob interface will be used when consecutive messages exceed this threshold
 )
 
 var (
@@ -21,10 +20,12 @@ var (
 	// interface to be used, if supported.
 	EnableBlobStreaming bool = true
 
-	// ErrWebsocketClosed is returned when operations are performed on a closed Websocket
-	ErrWebsocketClosed = errors.New("WebSocket: Web socket is closed")
-
 	blobSupported bool // set to true by init if browser supports the Blob interface
+)
+
+var (
+	jsUndefined = js.Undefined()
+	uint8Array  = js.Global().Get("Uint8Array")
 )
 
 // init checks to see if the browser hosting this application support the Websocket Blob interface

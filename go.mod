@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/coder/websocket v1.8.12
+	github.com/google/go-cmp v0.6.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/grpc/examples v0.0.0-20240816220358-f8d98a477c22
 )
